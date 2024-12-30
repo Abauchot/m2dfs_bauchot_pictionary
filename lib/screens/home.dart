@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:m2dfs_bauchot_pictionary/screens/login.dart';
+import 'package:m2dfs_bauchot_pictionary/screens/signup.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -24,7 +25,10 @@ class HomePage extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Action pour s'inscrire
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SignUp()
+                ));
               },
               child: Text('Sign Up'),
             ),
