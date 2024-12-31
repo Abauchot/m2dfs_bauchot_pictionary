@@ -6,6 +6,7 @@ class AppTheme {
   static const Color secondaryYellow = Color(0xFFFFD700); // Jaune vif
   static const Color backgroundLight = Color(0xFFB60AF8); // Fond bleu clair pastel
   static const Color backgroundDark = Color(0xFF0D0D0D); // Fond noir
+  static const Color whiteText = Color(0xFFFFFFFF); // Texte blanc
 
   // Définition du thème clair
   static ThemeData lightTheme = ThemeData(
@@ -20,9 +21,9 @@ class AppTheme {
       foregroundColor: Colors.white,
     ),
     textTheme: TextTheme(
-      displayLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: primaryBlue),
-      bodyLarge: TextStyle(fontSize: 16, color: Colors.black),
-      bodyMedium: TextStyle(fontSize: 14, color: Colors.black87),
+      displayLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: whiteText),
+      bodyLarge: TextStyle(fontSize: 16, color: whiteText),
+      bodyMedium: TextStyle(fontSize: 14, color: whiteText),
     ),
     buttonTheme: ButtonThemeData(
       buttonColor: primaryBlue,

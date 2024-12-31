@@ -37,6 +37,9 @@ dependencies:
   shared_preferences: ^2.3.4
   flutter_dotenv: ^5.2.1
   http: ^1.2.2
+  pretty_qr_code: ^3.3.0
+  mobile_scanner: ^6.0.2
+
 
 dev_dependencies:
   flutter_test:
