@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:m2dfs_bauchot_pictionary/screens/team_building.dart';
 import 'package:m2dfs_bauchot_pictionary/utils/theme.dart';
 import 'package:m2dfs_bauchot_pictionary/components/qr_code_popup.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 
 class StartGame extends StatefulWidget {
@@ -28,6 +30,8 @@ class _StartGameState extends State<StartGame> {
       return;
     }
 
+    print('User token: $token'); // Debugging token
+
     final String url = '${dotenv.env['API_URL']}/game_sessions';
 
     final response = await http.post(
@@ -41,15 +45,50 @@ class _StartGameState extends State<StartGame> {
       }),
     );
 
+    print('Request headers: ${response.request?.headers}'); // Debugging headers
+
     if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      final String gameId = data['id'].toString(); // Assuming the response contains the game ID
+
+      print('Game created successfully with ID: $gameId');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Game created successfully!'),
           ),
         );
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            final qrData = '${dotenv.env['API_URL']}/game_sessions/$gameId';
+            print('QR Code Data: $qrData');
+            return AlertDialog(
+              title: const Text('Game QR Code'),
+              content: PrettyQr(
+                data: qrData,
+                size: 200,
+                roundEdges: true,
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TeamBuilding(gameId: gameId)),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        );
       }
     } else {
+      print('Failed to create game: ${response.body}'); // Debugging response body
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -67,15 +106,68 @@ class _StartGameState extends State<StartGame> {
     );
 
     if (code != null) {
-      // Handle the QR code result here
       print('QR Code: $code');
-      print('Joining game...');
-      // Add your logic to join the game using the scanned code
+      await _joinGameSession(code);
     } else {
       print('No QR code scanned');
-      print ('LOSER...');
     }
   }
+
+  Future<void> _joinGameSession(String gameId) async {
+    // Extraire uniquement l'ID de la partie si une URL complète est fournie
+    if (gameId.startsWith('http')) {
+      final uri = Uri.parse(gameId);
+      gameId = uri.pathSegments.last; // Récupère la dernière partie de l'URL
+    }
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('userToken');
+
+    if (token == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('User token not found. Please log in again.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    final String url = '${dotenv.env['API_URL']}/game_session/$gameId/join';
+    print('Joining game with ID: $gameId');
+    print('Request URL: $url');
+    print('User token: $token');
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('Response status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => TeamBuilding(gameId: gameId)),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to join game. Please try again.'),
+          ),
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
