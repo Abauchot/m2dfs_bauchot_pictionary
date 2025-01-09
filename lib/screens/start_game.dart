@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:m2dfs_bauchot_pictionary/screens/team_building.dart';
 import 'package:m2dfs_bauchot_pictionary/utils/theme.dart';
 import 'package:m2dfs_bauchot_pictionary/components/qr_code_popup.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:m2dfs_bauchot_pictionary/utils/players_service.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-
 
 class StartGame extends StatefulWidget {
   @override
@@ -15,43 +11,13 @@ class StartGame extends StatefulWidget {
 }
 
 class _StartGameState extends State<StartGame> {
+  final PlayersService _playersService = PlayersService();
+  String _selectedTeam = 'blue';
+
   Future<void> _createGame() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('userToken');
-
-    if (token == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User token not found. Please log in again.'),
-          ),
-        );
-      }
-      return;
-    }
-
-    print('User token: $token'); // Debugging token
-
-    final String url = '${dotenv.env['API_URL']}/game_sessions';
-
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        // Add your game creation parameters here
-      }),
-    );
-
-    print('Request headers: ${response.request?.headers}'); // Debugging headers
-
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      final String gameId = data['id'].toString(); // Assuming the response contains the game ID
-
-      print('Game created successfully with ID: $gameId');
+    try {
+      final data = await _playersService.createGame();
+      final String gameId = data['id'].toString();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -59,17 +25,16 @@ class _StartGameState extends State<StartGame> {
             content: Text('Game created successfully!'),
           ),
         );
+// lib/screens/start_game.dart
+
         showDialog(
           context: context,
           builder: (BuildContext context) {
-            final qrData = '${dotenv.env['API_URL']}/game_sessions/$gameId';
-            print('QR Code Data: $qrData');
+            final qrData = gameId;
             return AlertDialog(
               title: const Text('Game QR Code'),
-              content: PrettyQr(
+              content: PrettyQrView.data(
                 data: qrData,
-                size: 200,
-                roundEdges: true,
               ),
               actions: <Widget>[
                 TextButton(
@@ -87,12 +52,31 @@ class _StartGameState extends State<StartGame> {
           },
         );
       }
-    } else {
-      print('Failed to create game: ${response.body}'); // Debugging response body
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to create game. Please try again.'),
+          SnackBar(
+            content: Text(e.toString()),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _joinGameSession(String gameId) async {
+    try {
+      await _playersService.joinGame(gameId, _selectedTeam);
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => TeamBuilding(gameId: gameId)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
           ),
         );
       }
@@ -106,68 +90,9 @@ class _StartGameState extends State<StartGame> {
     );
 
     if (code != null) {
-      print('QR Code: $code');
       await _joinGameSession(code);
-    } else {
-      print('No QR code scanned');
     }
   }
-
-  Future<void> _joinGameSession(String gameId) async {
-    // Extraire uniquement l'ID de la partie si une URL complète est fournie
-    if (gameId.startsWith('http')) {
-      final uri = Uri.parse(gameId);
-      gameId = uri.pathSegments.last; // Récupère la dernière partie de l'URL
-    }
-
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('userToken');
-
-    if (token == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User token not found. Please log in again.'),
-          ),
-        );
-      }
-      return;
-    }
-
-    final String url = '${dotenv.env['API_URL']}/game_session/$gameId/join';
-    print('Joining game with ID: $gameId');
-    print('Request URL: $url');
-    print('User token: $token');
-
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    print('Response status code: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
-    if (response.statusCode == 200) {
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => TeamBuilding(gameId: gameId)),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to join game. Please try again.'),
-          ),
-        );
-      }
-    }
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -201,6 +126,21 @@ class _StartGameState extends State<StartGame> {
                   fontSize: 14,
                   color: Colors.white,
                 ),
+              ),
+              const SizedBox(height: 20),
+              DropdownButton<String>(
+                value: _selectedTeam,
+                items: <String>['blue', 'red'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedTeam = newValue!;
+                  });
+                },
               ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
