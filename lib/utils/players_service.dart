@@ -1,5 +1,3 @@
-// lib/services/players_service.dart
-
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -15,6 +13,7 @@ class PlayersService {
     }
 
     final String url = '${dotenv.env['API_URL']}/game_sessions';
+    print('Creating game with URL: $url');
     final response = await http.post(
       Uri.parse(url),
       headers: {
@@ -24,15 +23,17 @@ class PlayersService {
       body: jsonEncode({}),
     );
 
+    print('Response status code: ${response.statusCode}');
     if (response.statusCode == 201) {
+      print('Game created successfully');
       return jsonDecode(response.body);
     } else {
+      print('Failed to create game: ${response.body}');
       throw Exception('Failed to create game. Please try again.');
     }
   }
 
-
-  Future<void> joinGame(String gameId, String team) async {
+  Future<Map<String, dynamic>> joinGame(String gameId, String team) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('userToken');
 
@@ -41,6 +42,7 @@ class PlayersService {
     }
 
     final String url = '${dotenv.env['API_URL']}/game_sessions/$gameId/join';
+    print('Joining game with URL: $url and team: $team');
     final response = await http.post(
       Uri.parse(url),
       headers: {
@@ -51,10 +53,17 @@ class PlayersService {
         'color': team,
       }),
     );
-    print('Response status code: ${response.statusCode}');
-    print('Response body: ${response.body}');
 
-    if (response.statusCode != 200) {
+    print('Response status code: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      print('Joined game successfully');
+      final responseData = jsonDecode(response.body);
+      return {
+        'player_id': responseData['player_id'].toString(),
+        'player_name': responseData['player_name'] ?? 'Unknown Player',
+      };
+    } else {
+      print('Failed to join game: ${response.body}');
       throw Exception('Failed to join game. Please try again.');
     }
   }
