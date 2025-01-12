@@ -67,4 +67,31 @@ class PlayersService {
       throw Exception('Failed to join game. Please try again.');
     }
   }
+
+  Future<void> leaveGame(String gameId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('userToken');
+
+    if (token == null) {
+      throw Exception('User token not found. Please log in again.');
+    }
+
+    final String url = '${dotenv.env['API_URL']}/game_sessions/$gameId/leave';
+    print('Leaving game with URL: $url');
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('Response status code: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      print('Left game successfully');
+    } else {
+      print('Failed to leave game: ${response.body}');
+      throw Exception('Failed to leave game. Please try again.');
+    }
+  }
 }

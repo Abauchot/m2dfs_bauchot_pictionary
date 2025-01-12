@@ -1,10 +1,12 @@
 // lib/screens/team_building.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:m2dfs_bauchot_pictionary/screens/start_game.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:m2dfs_bauchot_pictionary/utils/theme.dart';
 import 'package:m2dfs_bauchot_pictionary/models/Player.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/team_provider.dart';
+import 'package:m2dfs_bauchot_pictionary/utils/players_service.dart';
 
 class TeamBuilding extends ConsumerWidget {
   final String gameId;
@@ -17,6 +19,7 @@ class TeamBuilding extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final teamState = ref.watch(teamProvider);
+    final PlayersService playersService = PlayersService();
     print('Building TeamBuilding screen with gameId: $gameId');
     print('Current team state: $teamState');
 
@@ -64,6 +67,30 @@ class TeamBuilding extends ConsumerWidget {
                     'Share the game code with your friends to invite them to join your team!',
                 style: Theme.of(context).textTheme.bodyLarge,
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  try {
+                    await playersService.leaveGame(gameId);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => StartGame()),
+                          (route) => false,
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(e.toString()),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.exit_to_app),
+                label: const Text('Leave Game'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
               ),
             ],
           ),
