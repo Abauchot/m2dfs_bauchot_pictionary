@@ -88,6 +88,8 @@ class _StartGameState extends ConsumerState<StartGame> {
       );
       print('Player added to team: ${playerData['player_name']}');
 
+      if (!mounted) return;
+
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => TeamBuilding(gameId: gameId)),
