@@ -8,6 +8,7 @@ import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:m2dfs_bauchot_pictionary/models/Player.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/team_provider.dart';
 
+
 class StartGame extends ConsumerStatefulWidget {
   @override
   _StartGameState createState() => _StartGameState();
@@ -22,6 +23,7 @@ class _StartGameState extends ConsumerState<StartGame> {
       print('Creating game...');
       final data = await _playersService.createGame();
       final String gameId = data['id'].toString();
+      final String playerName = data['player_name'];
       print('Game created with ID: $gameId');
 
       print('Joining game with ID: $gameId and team: $_selectedTeam');
@@ -54,6 +56,7 @@ class _StartGameState extends ConsumerState<StartGame> {
                     context,
                     MaterialPageRoute(builder: (context) => TeamBuilding(
                       gameId: gameId,
+                      playerName: playerName,
                     )),
                   );
                 },
@@ -92,7 +95,10 @@ class _StartGameState extends ConsumerState<StartGame> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => TeamBuilding(gameId: gameId)),
+        MaterialPageRoute(builder: (context) => TeamBuilding(
+            gameId: gameId,
+            playerName: playerData['player_name'],
+        )),
       );
     } catch (e) {
       print('Error joining game session: $e');

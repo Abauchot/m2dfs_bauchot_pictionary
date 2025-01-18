@@ -32,6 +32,26 @@ class AppTheme {
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: primaryBlue,
     ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+              (Set<WidgetState> states) {
+            if (states.contains(WidgetState.pressed)) {
+              return secondaryYellow; // Highlight color when pressed
+            }
+            return primaryBlue; // Default color
+          },
+        ),
+        foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+              (Set<WidgetState> states) {
+            if (states.contains(WidgetState.pressed)) {
+              return Colors.black; // Text color when pressed
+            }
+            return whiteText; // Default text color
+          },
+        ),
+      ),
+    ),
   );
 
   // Définition du thème sombre (optionnel)

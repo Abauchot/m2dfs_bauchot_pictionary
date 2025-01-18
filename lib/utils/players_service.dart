@@ -26,7 +26,12 @@ class PlayersService {
     print('Response status code: ${response.statusCode}');
     if (response.statusCode == 201) {
       print('Game created successfully');
-      return jsonDecode(response.body);
+      final responseData = jsonDecode(response.body);
+      return {
+        'id': responseData['id'].toString(),
+        'player_id': responseData['player_id'].toString(),
+        'player_name': responseData['player_name'] ?? 'Unknown Player',
+      };
     } else {
       print('Failed to create game: ${response.body}');
       throw Exception('Failed to create game. Please try again.');

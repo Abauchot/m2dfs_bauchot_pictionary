@@ -7,13 +7,16 @@ import 'package:m2dfs_bauchot_pictionary/utils/theme.dart';
 import 'package:m2dfs_bauchot_pictionary/models/Player.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/team_provider.dart';
 import 'package:m2dfs_bauchot_pictionary/utils/players_service.dart';
+import 'package:m2dfs_bauchot_pictionary/screens/challenge_creation.dart';
 
 class TeamBuilding extends ConsumerWidget {
   final String gameId;
+  final dynamic playerName;
 
   const TeamBuilding({
     super.key,
     required this.gameId,
+    required this.playerName,
   });
 
   @override
@@ -90,7 +93,22 @@ class TeamBuilding extends ConsumerWidget {
                 label: const Text('Leave Game'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
+                  foregroundColor: AppTheme.whiteText, // Set text color to white
                 ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChallengeCreation()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  foregroundColor: AppTheme.whiteText, // Set text color to white
+                ),
+                child: const Text('Create a Challenge'),
               ),
             ],
           ),
