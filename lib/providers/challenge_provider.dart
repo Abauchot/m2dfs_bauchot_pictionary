@@ -1,38 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/challenge.dart';
 
-class ChallengeNotifier extends StateNotifier<Challenge> {
-  ChallengeNotifier() : super(Challenge(firstWord: '', secondWord: ''));
+// Providers pour les états de la création du challenge
+final firstArticleProvider = StateProvider<String>((ref) => "UNE");
+final prepositionProvider = StateProvider<String>((ref) => "SUR");
+final secondArticleProvider = StateProvider<String>((ref) => "UN");
+final firstWordProvider = StateProvider<String>((ref) => "");
+final secondWordProvider = StateProvider<String>((ref) => "");
+final forbiddenWordsProvider = StateProvider<List<String>>((ref) => []);
 
-  void updateFirstWord(String value) {
-    state = state.copyWith(firstWord: value);
-  }
-
-  void updateSecondWord(String value) {
-    state = state.copyWith(secondWord: value);
-  }
-
-  void updateDescription(String value) {
-    state = state.copyWith(description: value);
-  }
-
-  void updateForbidden1(String value) {
-    state = state.copyWith(forbidden1: value);
-  }
-
-  void updateForbidden2(String value) {
-    state = state.copyWith(forbidden2: value);
-  }
-
-  void updateForbidden3(String value) {
-    state = state.copyWith(forbidden3: value);
-  }
-
-  void setErrorMessage(String value) {
-    state = state.copyWith(errorMessage: value);
-  }
-}
-
-final challengeProvider = StateNotifierProvider<ChallengeNotifier, Challenge>((ref) {
-  return ChallengeNotifier();
+// Liste globale des challenges
+final challengesProvider = StateNotifierProvider<ChallengesNotifier, List<String>>((ref) {
+  return ChallengesNotifier();
 });
+
+class ChallengesNotifier extends StateNotifier<List<String>> {
+  ChallengesNotifier() : super([]);
+
+  void addChallenge(String challenge) {
+    state = [...state, challenge];
+  }
+
+  void removeChallenge(int index) {
+    state = [...state]..removeAt(index);
+  }
+
+
+
+}

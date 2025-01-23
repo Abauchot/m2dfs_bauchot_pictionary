@@ -1,39 +1,28 @@
 class Challenge {
   final String firstWord;
   final String secondWord;
-  final String description;
-  final String forbidden1;
-  final String forbidden2;
-  final String forbidden3;
-  final String errorMessage;
+  final String thirdWord;
+  final String fourthWord;
+  final String fifthWord;
+  final List<String> forbiddenWords;
 
   Challenge({
     required this.firstWord,
     required this.secondWord,
-    this.description = '',
-    this.forbidden1 = '',
-    this.forbidden2 = '',
-    this.forbidden3 = '',
-    this.errorMessage = '',
+    required this.thirdWord,
+    required this.fourthWord,
+    required this.fifthWord,
+    required this.forbiddenWords,
   });
 
-  Challenge copyWith({
-    String? firstWord,
-    String? secondWord,
-    String? description,
-    String? forbidden1,
-    String? forbidden2,
-    String? forbidden3,
-    String? errorMessage,
-  }) {
-    return Challenge(
-      firstWord: firstWord ?? this.firstWord,
-      secondWord: secondWord ?? this.secondWord,
-      description: description ?? this.description,
-      forbidden1: forbidden1 ?? this.forbidden1,
-      forbidden2: forbidden2 ?? this.forbidden2,
-      forbidden3: forbidden3 ?? this.forbidden3,
-      errorMessage: errorMessage ?? this.errorMessage,
-    );
+  Map<String, dynamic> toJson() {
+    return {
+      "first_word": firstWord,
+      "second_word": secondWord,
+      "third_word": thirdWord,
+      "fourth_word": fourthWord,
+      "fifth_word": fifthWord,
+      "forbidden_words": forbiddenWords,
+    };
   }
 }

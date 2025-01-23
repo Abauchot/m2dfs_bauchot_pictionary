@@ -101,7 +101,7 @@ class TeamBuilding extends ConsumerWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ChallengeCreation()),
+                    MaterialPageRoute(builder: (context) =>( ChallengesScreen())),
                   );
                 },
                 style: ElevatedButton.styleFrom(
