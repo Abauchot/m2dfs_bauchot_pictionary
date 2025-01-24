@@ -8,6 +8,13 @@ class ChallengesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final challenges = ref.watch(challengesProvider);
 
+    void sendChallenge(int index) {
+      final challenge = challenges[index];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Challenge envoyé : $challenge')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Saisie des challenges')),
       body: challenges.isEmpty
@@ -20,11 +27,22 @@ class ChallengesScreen extends ConsumerWidget {
             child: ListTile(
               title: Text('Challenge #${index + 1}'),
               subtitle: Text(challenge),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  ref.read(challengesProvider.notifier).removeChallenge(index);
-                },
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.send, color: Colors.blue),
+                    onPressed: () => sendChallenge(index),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      ref
+                          .read(challengesProvider.notifier)
+                          .removeChallenge(index);
+                    },
+                  ),
+                ],
               ),
             ),
           );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/challenge_provider.dart';
 
-
 class ChallengeFormPopup extends ConsumerWidget {
   const ChallengeFormPopup({Key? key}) : super(key: key);
 
@@ -77,6 +76,7 @@ class ChallengeFormPopup extends ConsumerWidget {
                 hintText: 'Votre premier mot',
                 border: OutlineInputBorder(),
               ),
+              style: const TextStyle(color: Colors.black), // Couleur noire
             ),
             const SizedBox(height: 16),
             // Deuxième bouton SUR/DANS
@@ -113,6 +113,7 @@ class ChallengeFormPopup extends ConsumerWidget {
                 hintText: 'Votre deuxième mot',
                 border: OutlineInputBorder(),
               ),
+              style: const TextStyle(color: Colors.black), // Couleur noire
             ),
             const SizedBox(height: 16),
             // Gestion des mots interdits
@@ -136,6 +137,7 @@ class ChallengeFormPopup extends ConsumerWidget {
                       hintText: 'Ajouter un mot interdit',
                       border: OutlineInputBorder(),
                     ),
+                    style: const TextStyle(color: Colors.black), // Couleur noire
                   ),
                 ),
                 IconButton(
@@ -156,7 +158,6 @@ class ChallengeFormPopup extends ConsumerWidget {
     );
   }
 
-  // Méthode pour construire un bouton de bascule
   Widget _buildToggleButton(String label, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
