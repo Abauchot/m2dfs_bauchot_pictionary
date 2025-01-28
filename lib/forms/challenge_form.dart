@@ -76,7 +76,7 @@ class ChallengeFormPopup extends ConsumerWidget {
                 hintText: 'Votre premier mot',
                 border: OutlineInputBorder(),
               ),
-              style: const TextStyle(color: Colors.black), // Couleur noire
+              style: const TextStyle(color: Colors.black),
             ),
             const SizedBox(height: 16),
             // Deuxième bouton SUR/DANS

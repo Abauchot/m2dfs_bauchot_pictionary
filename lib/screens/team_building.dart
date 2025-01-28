@@ -8,6 +8,7 @@ import 'package:m2dfs_bauchot_pictionary/models/Player.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/team_provider.dart';
 import 'package:m2dfs_bauchot_pictionary/utils/players_service.dart';
 import 'package:m2dfs_bauchot_pictionary/screens/challenge_creation.dart';
+import 'package:m2dfs_bauchot_pictionary/providers/game_status_provider.dart';
 
 class TeamBuilding extends ConsumerWidget {
   final String gameId;
@@ -22,9 +23,31 @@ class TeamBuilding extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final teamState = ref.watch(teamProvider);
+    final gameStatusNotifier = ref.read(gameStatusProvider.notifier);
     final PlayersService playersService = PlayersService();
+
+    ref.listen(gameStatusProvider, (previous, next) {
+      if (next == 'lobby') {
+        gameStatusNotifier.fetchGameStatus(gameId);
+      }
+    });
+
+    final gameStatus = ref.watch(gameStatusProvider);
+
     print('Building TeamBuilding screen with gameId: $gameId');
     print('Current team state: $teamState');
+    print('Current game status: $gameStatus');
+
+
+    if (gameStatus.startsWith('error')) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Team Building'),
+          backgroundColor: AppTheme.primaryBlue,
+        ),
+        body: Center(child: Text(gameStatus)),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -93,7 +116,7 @@ class TeamBuilding extends ConsumerWidget {
                 label: const Text('Leave Game'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
-                  foregroundColor: AppTheme.whiteText, // Set text color to white
+                  foregroundColor: AppTheme.whiteText,
                 ),
               ),
               const SizedBox(height: 20),
@@ -101,12 +124,12 @@ class TeamBuilding extends ConsumerWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>( ChallengesScreen())),
+                    MaterialPageRoute(builder: (context) =>( ChallengesScreen(gameId: gameId,))),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: AppTheme.whiteText, // Set text color to white
+                  foregroundColor: AppTheme.whiteText,
                 ),
                 child: const Text('Create a Challenge'),
               ),
@@ -123,7 +146,6 @@ class TeamBuilding extends ConsumerWidget {
       List<Player> teamMembers,
       Color color,
       ) {
-    print('Building team container for $teamName with members: $teamMembers');
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),

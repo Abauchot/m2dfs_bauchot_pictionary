@@ -1,12 +1,40 @@
+// lib/screens/challenge_creation.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/challenge_provider.dart';
 import 'package:m2dfs_bauchot_pictionary/forms/challenge_form.dart';
+import 'package:m2dfs_bauchot_pictionary/providers/game_status_provider.dart';
 
 class ChallengesScreen extends ConsumerWidget {
+  final String gameId;
+
+  const ChallengesScreen({
+    super.key,
+    required this.gameId,
+  });
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final challenges = ref.watch(challengesProvider);
+    final gameStatusNotifier = ref.read(gameStatusProvider.notifier);
+
+    // Delay the modification of the provider state
+    Future(() {
+      gameStatusNotifier.setChallengeStatus();
+    });
+
+    final gameStatus = ref.watch(gameStatusProvider);
+
+    print('Building Challenges screen with gameId: $gameId');
+    print('Current challenges: $challenges');
+    print('Current game status: $gameStatus');
+
+    if (gameStatus.startsWith('error')) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Saisie des challenges')),
+        body: Center(child: Text(gameStatus)),
+      );
+    }
 
     void sendChallenge(int index) {
       final challenge = challenges[index];
