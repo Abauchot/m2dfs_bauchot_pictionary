@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/challenge_provider.dart';
 import 'package:m2dfs_bauchot_pictionary/forms/challenge_form.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/game_status_provider.dart';
+import 'package:m2dfs_bauchot_pictionary/screens/challenge_guess.dart' as guess; // Import the challenge_guess.dart file
 
 class ChallengesScreen extends ConsumerWidget {
   final String gameId;
@@ -18,7 +19,6 @@ class ChallengesScreen extends ConsumerWidget {
     final challenges = ref.watch(challengesProvider);
     final gameStatusNotifier = ref.read(gameStatusProvider.notifier);
 
-    // Delay the modification of the provider state
     Future(() {
       gameStatusNotifier.setChallengeStatus();
     });
@@ -36,10 +36,9 @@ class ChallengesScreen extends ConsumerWidget {
       );
     }
 
-    void sendChallenge(int index) {
-      final challenge = challenges[index];
+    void sendAllChallenges() {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Challenge envoyé : $challenge')),
+        const SnackBar(content: Text('All challenges sent')),
       );
     }
 
@@ -47,34 +46,60 @@ class ChallengesScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Saisie des challenges')),
       body: challenges.isEmpty
           ? const Center(child: Text('Aucun challenge ajouté'))
-          : ListView.builder(
-        itemCount: challenges.length,
-        itemBuilder: (context, index) {
-          final challenge = challenges[index];
-          return Card(
-            child: ListTile(
-              title: Text('Challenge #${index + 1}'),
-              subtitle: Text(challenge),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.send, color: Colors.blue),
-                    onPressed: () => sendChallenge(index),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      ref
-                          .read(challengesProvider.notifier)
-                          .removeChallenge(index);
-                    },
-                  ),
-                ],
+          : Column(
+        children: [
+          if (challenges.length < 3)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'You need to enter at least 3 challenges to start the game',
+                style: Theme.of(context).textTheme.bodyLarge,
+                textAlign: TextAlign.center,
               ),
             ),
-          );
-        },
+          Expanded(
+            child: ListView.builder(
+              itemCount: challenges.length,
+              itemBuilder: (context, index) {
+                final challenge = challenges[index];
+                return Card(
+                  child: ListTile(
+                    title: Text('Challenge #${index + 1}'),
+                    subtitle: Text(challenge),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        ref
+                            .read(challengesProvider.notifier)
+                            .removeChallenge(index);
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (challenges.length >= 3)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: sendAllChallenges,
+                child: const Text('Send All Challenges'),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => guess.ChallengePage()),
+                );
+              },
+              child: const Text('Go to Challenge Guess Screen'),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showDialog(

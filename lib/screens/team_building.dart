@@ -121,11 +121,20 @@ class TeamBuilding extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>( ChallengesScreen(gameId: gameId,))),
-                  );
+                onPressed: () async {
+                  try {
+                    await gameStatusNotifier.startGameSession(gameId);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ChallengesScreen(gameId: gameId)),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(e.toString()),
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryBlue,
