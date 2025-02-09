@@ -9,6 +9,7 @@ final gameStatusProvider = StateNotifierProvider<GameStatusNotifier, String>((re
   return GameStatusNotifier();
 });
 
+// lib/providers/game_status_provider.dart
 class GameStatusNotifier extends StateNotifier<String> {
   GameStatusNotifier() : super('lobby');
 
@@ -19,11 +20,14 @@ class GameStatusNotifier extends StateNotifier<String> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         state = data['status'];
+        print('Fetched game status: $state');
       } else {
         state = 'error: Failed to fetch game status';
+        print(state);
       }
     } catch (e) {
       state = 'error: ${e.toString()}';
+      print(state);
     }
   }
 
@@ -47,22 +51,27 @@ class GameStatusNotifier extends StateNotifier<String> {
           'Content-Type': 'application/json',
         },
       );
-      print('Request headers: ${response.request?.headers}');
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Response data: $data');
         state = data['status'];
+        print('Game session started: $state');
       } else {
         state = 'error: Failed to start game session';
+        print(state);
       }
     } catch (e) {
       state = 'error: ${e.toString()}';
+      print(state);
     }
   }
 
   void setChallengeStatus() {
     state = 'challenge';
+    print('Status set to challenge');
+  }
+
+  void setDrawingStatus() {
+    state = 'drawing';
+    print('Status set to drawing');
   }
 }

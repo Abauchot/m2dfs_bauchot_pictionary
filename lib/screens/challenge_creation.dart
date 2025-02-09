@@ -37,8 +37,14 @@ class ChallengesScreen extends ConsumerWidget {
     }
 
     void sendAllChallenges() {
+      print('Sending all challenges...');
+      gameStatusNotifier.setDrawingStatus();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All challenges sent')),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => guess.ChallengePage()),
       );
     }
 
