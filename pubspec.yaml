@@ -40,6 +40,7 @@ dependencies:
   pretty_qr_code: ^3.3.0
   mobile_scanner: ^6.0.2
   flutter_riverpod: ^2.6.1
+  cached_network_image: ^3.4.1
 
 
 dev_dependencies:

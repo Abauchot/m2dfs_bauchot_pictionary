@@ -23,6 +23,4 @@ class ChallengesNotifier extends StateNotifier<List<String>> {
     state = [...state]..removeAt(index);
   }
 
-
-
 }
