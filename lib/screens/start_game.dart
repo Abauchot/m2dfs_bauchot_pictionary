@@ -7,7 +7,7 @@ import 'package:m2dfs_bauchot_pictionary/utils/players_service.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:m2dfs_bauchot_pictionary/models/Player.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/team_provider.dart';
-
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class StartGame extends ConsumerStatefulWidget {
   @override
@@ -136,68 +136,79 @@ class _StartGameState extends ConsumerState<StartGame> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'Hello, ready to play ? 🎨',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+          child: AnimationLimiter(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: AnimationConfiguration.toStaggeredList(
+                duration: const Duration(milliseconds: 375),
+                childAnimationBuilder: (widget) => SlideAnimation(
+                  horizontalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: widget,
+                  ),
                 ),
+                children: <Widget>[
+                  const Text(
+                    'Hello, ready to play ? 🎨',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Piction.ai.ry is a game for 4 players in 2 teams, where one player must draw '
+                        'an image without using forbidden words, and the other must guess the challenge. '
+                        'Roles change every round, and the game continues until all challenges are solved '
+                        'or time runs out. Mistakes cost points, and each correct word earns points.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  DropdownButton<String>(
+                    value: _selectedTeam,
+                    items: <String>['blue', 'red'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedTeam = newValue!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: _createGame,
+                    icon: const Icon(Icons.group),
+                    label: Text(
+                      'Create a new game',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: _joinGame,
+                    icon: const Icon(Icons.qr_code),
+                    label: Text(
+                      'Join a game',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryBlue,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Piction.ai.ry is a game for 4 players in 2 teams, where one player must draw '
-                    'an image without using forbidden words, and the other must guess the challenge. '
-                    'Roles change every round, and the game continues until all challenges are solved '
-                    'or time runs out. Mistakes cost points, and each correct word earns points.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 20),
-              DropdownButton<String>(
-                value: _selectedTeam,
-                items: <String>['blue', 'red'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedTeam = newValue!;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _createGame,
-                icon: const Icon(Icons.group),
-                label: Text(
-                  'Create a new game',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _joinGame,
-                icon: const Icon(Icons.qr_code),
-                label: Text(
-                  'Join a game',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
