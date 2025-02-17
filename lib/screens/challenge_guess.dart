@@ -1,19 +1,22 @@
+//challenge_guess.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../utils/theme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../models/challenge.dart';
 
-final challengesProvider = StateProvider<List<String>>((ref) => []);
+final challengesProvider = StateProvider<List<Challenge>>((ref) => []);
 
 class ChallengePage extends ConsumerWidget {
+  const ChallengePage({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final challenges = ref.watch(challengesProvider);
-
-    void sendAllChallenges() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All challenges sent')),
-      );
-    }
+    //final currentChallenge = challenges.isNotEmpty ? challenges.first : null;
+    final currentChallenge = challenges.isNotEmpty ? challenges.firstWhere(
+            (challenge) => challenge.imageUrl != null,
+        orElse: () => challenges.first
+    ) : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -37,7 +40,7 @@ class ChallengePage extends ConsumerWidget {
                 children: [
                   Text('Votre challenge:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
-                  Text('UNE POULE SUR UN MUR',
+                  Text(currentChallenge?.generatePrompt() ?? 'Aucun challenge',
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
                   Wrap(
@@ -57,10 +60,14 @@ class ChallengePage extends ConsumerWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/image.png',
+                child: currentChallenge?.imageUrl != null
+                    ? CachedNetworkImage(
+                  imageUrl: currentChallenge!.imageUrl!,
                   fit: BoxFit.cover,
-                ),
+                  placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                )
+                    : Center(child: Text('Aucune image disponible')),
               ),
             ),
             SizedBox(height: 16),
@@ -93,9 +100,11 @@ class ChallengePage extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
               ),
-              child: Text(
-                'Le piaf ingrédient de base des menus KFC sur des briques empilées',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+              child: TextField(
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -116,13 +125,4 @@ class ChallengePage extends ConsumerWidget {
       child: Text(text, style: TextStyle(color: Colors.white)),
     );
   }
-}
-
-void main() {
-  runApp(ProviderScope(
-    child: MaterialApp(
-      theme: AppTheme.lightTheme,
-      home: ChallengePage(),
-    ),
-  ));
 }

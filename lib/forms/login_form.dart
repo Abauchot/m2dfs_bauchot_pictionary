@@ -25,6 +25,15 @@ class _LoginFormState extends State<LoginForm> {
     });
   }
 
+  Map<String, dynamic> decodeJWT(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) {
+      throw Exception('JWT invalide');
+    }
+    final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+    return jsonDecode(payload);
+  }
+
   Future<void> _login() async {
     final String name = _nameController.text;
     final String password = _passwordController.text;
@@ -41,8 +50,6 @@ class _LoginFormState extends State<LoginForm> {
     }
 
     final String url = '${dotenv.env['API_URL']}/login';
-    print('Attempting to login with URL: $url');
-    print('Name: $name, Password: $password');
 
     final response = await http.post(
       Uri.parse(url),
@@ -50,14 +57,18 @@ class _LoginFormState extends State<LoginForm> {
       body: jsonEncode({'name': name, 'password': password}),
     );
 
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      final String token = data['token'];
+      final decodedToken = decodeJWT(token);
+      final String userId = decodedToken['id'].toString();
+
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('userName', name);
-      await prefs.setString('userToken', data['token']);
+      await prefs.setString('userToken', token);
+      await prefs.setString('userId', userId);
+
+
       if (_rememberMe) {
         await prefs.setBool('rememberMe', true);
       }
@@ -82,6 +93,7 @@ class _LoginFormState extends State<LoginForm> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

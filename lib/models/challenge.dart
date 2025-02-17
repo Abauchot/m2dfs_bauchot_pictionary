@@ -1,31 +1,57 @@
+//challenge model
+import 'dart:convert';
+
+import 'package:uuid/uuid.dart';
+
 class Challenge {
-  final int id;
+  final String id;
   final String firstWord;
   final String secondWord;
   final String thirdWord;
   final String fourthWord;
   final String fifthWord;
   final List<String> forbiddenWords;
+  String? imageUrl;
 
   Challenge({
-    required this.id,
+    String? id,
     required this.firstWord,
     required this.secondWord,
     required this.thirdWord,
     required this.fourthWord,
     required this.fifthWord,
-    required this.forbiddenWords,
-  });
+    required dynamic forbiddenWords,
+    this.imageUrl,
+  }) : id = id ?? const Uuid().v4(),
+       forbiddenWords = _parseForbiddenWords(forbiddenWords);
 
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "first_word": firstWord,
-      "second_word": secondWord,
-      "third_word": thirdWord,
-      "fourth_word": fourthWord,
-      "fifth_word": fifthWord,
-      "forbidden_words": forbiddenWords,
-    };
+  static List<String> _parseForbiddenWords(dynamic input) {
+    if (input is String) {
+      try {
+        return List<String>.from(jsonDecode(input));
+      } catch (e) {
+        return [];
+      }
+    } else if (input is List) {
+      return List<String>.from(input);
+    }
+    return [];
   }
+
+  String generatePrompt() {
+    return '$firstWord $secondWord $thirdWord $fourthWord $fifthWord';
+  }
+
+  String generateCleanPrompt() {
+    String prompt = '$firstWord $secondWord $thirdWord $fourthWord $fifthWord'.toLowerCase();
+
+    for (String word in forbiddenWords) {
+      String lowerWord = word.toLowerCase();
+      if (prompt.contains(lowerWord)) {
+        prompt = prompt.replaceAll(RegExp("\\b$lowerWord\\b", caseSensitive: false), "***");
+      }
+    }
+    return prompt;
+  }
+
 }

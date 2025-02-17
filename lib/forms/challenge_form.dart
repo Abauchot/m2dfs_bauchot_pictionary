@@ -1,9 +1,12 @@
+//challenge_form.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/challenge.dart';
 import '../providers/challenge_provider.dart';
 
 class ChallengeFormPopup extends ConsumerWidget {
-  const ChallengeFormPopup({Key? key}) : super(key: key);
+  final String gameId;
+  const ChallengeFormPopup({super.key, required this.gameId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,24 +28,37 @@ class ChallengeFormPopup extends ConsumerWidget {
       }
     }
 
-    void removeForbiddenWord(int index) {
-      ref
-          .read(forbiddenWordsProvider.notifier)
-          .update((state) => state..removeAt(index));
+    void removeForbiddenWord(WidgetRef ref, int index) {
+      ref.read(forbiddenWordsProvider.notifier).update((state) => [...state]..removeAt(index));
     }
 
-    void submitForm() {
-      if (firstWord.isNotEmpty && secondWord.isNotEmpty) {
-        final challenge =
-            "$firstArticle $firstWord $preposition $secondArticle $secondWord";
-        final forbiddenWordsList = List<String>.from(forbiddenWords);
-        final fullChallenge =
-            "$challenge | Interdits : ${forbiddenWordsList.join(', ')}";
 
-        ref.read(challengesProvider.notifier).addChallenge(fullChallenge);
+    void submitForm(String gameId) {
+      if (firstWord.isNotEmpty && secondWord.isNotEmpty) {
+        final challenge = Challenge(
+          firstWord: firstArticle,  // UN / UNE
+          secondWord: firstWord,    // Mot 1
+          thirdWord: preposition,   // SUR / DANS
+          fourthWord: secondArticle,// UN / UNE
+          fifthWord: secondWord,    // Mot 2
+          forbiddenWords: forbiddenWords.length >= 3
+              ? List<String>.from(forbiddenWords)
+              : ["motInterdit1", "motInterdit2", "motInterdit3"],
+        );
+
+        ref.read(challengesProvider.notifier).addChallenge(challenge);
         Navigator.of(context).pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez remplir tous les champs'),
+          ),
+        );
       }
     }
+
+
+
 
     return Dialog(
       child: Padding(
@@ -124,7 +140,7 @@ class ChallengeFormPopup extends ConsumerWidget {
                   .entries
                   .map((entry) => Chip(
                 label: Text(entry.value),
-                onDeleted: () => removeForbiddenWord(entry.key),
+                onDeleted: () => removeForbiddenWord(ref,entry.key),
               ))
                   .toList(),
             ),
@@ -149,7 +165,8 @@ class ChallengeFormPopup extends ConsumerWidget {
             const SizedBox(height: 16),
             // Bouton Ajouter
             ElevatedButton(
-              onPressed: submitForm,
+              onPressed: () => submitForm(gameId),
+
               child: const Text('Ajouter'),
             ),
           ],

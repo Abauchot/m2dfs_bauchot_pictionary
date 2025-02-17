@@ -13,7 +13,6 @@ class PlayersService {
     }
 
     final String url = '${dotenv.env['API_URL']}/game_sessions';
-    print('Creating game with URL: $url');
     final response = await http.post(
       Uri.parse(url),
       headers: {
@@ -23,9 +22,7 @@ class PlayersService {
       body: jsonEncode({}),
     );
 
-    print('Response status code: ${response.statusCode}');
     if (response.statusCode == 201) {
-      print('Game created successfully');
       final responseData = jsonDecode(response.body);
       return {
         'id': responseData['id'].toString(),
@@ -33,7 +30,6 @@ class PlayersService {
         'player_name': responseData['player_name'] ?? 'Unknown Player',
       };
     } else {
-      print('Failed to create game: ${response.body}');
       throw Exception('Failed to create game. Please try again.');
     }
   }
@@ -47,7 +43,6 @@ class PlayersService {
     }
 
     final String url = '${dotenv.env['API_URL']}/game_sessions/$gameId/join';
-    print('Joining game with URL: $url and team: $team');
     final response = await http.post(
       Uri.parse(url),
       headers: {
@@ -59,16 +54,13 @@ class PlayersService {
       }),
     );
 
-    print('Response status code: ${response.statusCode}');
     if (response.statusCode == 200) {
-      print('Joined game successfully');
       final responseData = jsonDecode(response.body);
       return {
         'player_id': responseData['player_id'].toString(),
         'player_name': responseData['player_name'] ?? 'Unknown Player',
       };
     } else {
-      print('Failed to join game: ${response.body}');
       throw Exception('Failed to join game. Please try again.');
     }
   }
@@ -82,7 +74,6 @@ class PlayersService {
     }
 
     final String url = '${dotenv.env['API_URL']}/game_sessions/$gameId/leave';
-    print('Leaving game with URL: $url');
     final response = await http.get(
       Uri.parse(url),
       headers: {
@@ -91,11 +82,8 @@ class PlayersService {
       },
     );
 
-    print('Response status code: ${response.statusCode}');
     if (response.statusCode == 200) {
-      print('Left game successfully');
     } else {
-      print('Failed to leave game: ${response.body}');
       throw Exception('Failed to leave game. Please try again.');
     }
   }

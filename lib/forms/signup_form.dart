@@ -39,17 +39,12 @@ class _SignupFormState extends State<SignupForm> {
     }
 
     final String url = '${dotenv.env['API_URL']}/players';
-    print('Attempting to signup with URL: $url');
-    print('Name: $name, Password: $password');
 
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'name': name, 'password': password}),
     );
-
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -58,7 +53,7 @@ class _SignupFormState extends State<SignupForm> {
       if (data['token'] != null) {
         await prefs.setString('userToken', data['token']);
       } else {
-        print('Token is missing in the response');
+        await prefs.remove('userToken');
       }
       Navigator.push(
         context,

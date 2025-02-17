@@ -20,15 +20,10 @@ class _StartGameState extends ConsumerState<StartGame> {
 
   Future<void> _createGame() async {
     try {
-      print('Creating game...');
       final data = await _playersService.createGame();
       final String gameId = data['id'].toString();
       final String playerName = data['player_name'];
-      print('Game created with ID: $gameId');
-
-      print('Joining game with ID: $gameId and team: $_selectedTeam');
       await _playersService.joinGame(gameId, _selectedTeam);
-      print('Joined game successfully');
 
       if (!mounted) return;
 
@@ -78,9 +73,7 @@ class _StartGameState extends ConsumerState<StartGame> {
 
   Future<void> _joinGameSession(String gameId) async {
     try {
-      print('Joining game session with ID: $gameId and team: $_selectedTeam');
       final playerData = await _playersService.joinGame(gameId, _selectedTeam);
-      print('Player data received: $playerData');
 
       if (!mounted) return;
 
@@ -89,7 +82,6 @@ class _StartGameState extends ConsumerState<StartGame> {
         Player(id: playerData['player_id'], name: playerData['player_name']),
         _selectedTeam,
       );
-      print('Player added to team: ${playerData['player_name']}');
 
       if (!mounted) return;
 
@@ -118,10 +110,13 @@ class _StartGameState extends ConsumerState<StartGame> {
     );
 
     if (code != null) {
-      print('QR Code scanned: $code');
       await _joinGameSession(code);
     } else {
-      print('No QR Code scanned');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No game code provided'),
+        ),
+      );
     }
   }
 

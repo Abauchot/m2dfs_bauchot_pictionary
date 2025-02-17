@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/challenge_provider.dart';
 import 'package:m2dfs_bauchot_pictionary/forms/challenge_form.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/game_status_provider.dart';
-import 'package:m2dfs_bauchot_pictionary/screens/challenge_guess.dart' as guess; // Import the challenge_guess.dart file
+import 'package:m2dfs_bauchot_pictionary/screens/challenge_guess.dart' as guess;
 
 class ChallengesScreen extends ConsumerWidget {
   final String gameId;
@@ -19,15 +19,13 @@ class ChallengesScreen extends ConsumerWidget {
     final challenges = ref.watch(challengesProvider);
     final gameStatusNotifier = ref.read(gameStatusProvider.notifier);
 
+
     Future(() {
-      gameStatusNotifier.setChallengeStatus();
+      gameStatusNotifier.setChallengeStatus(gameId);
     });
 
     final gameStatus = ref.watch(gameStatusProvider);
 
-    print('Building Challenges screen with gameId: $gameId');
-    print('Current challenges: $challenges');
-    print('Current game status: $gameStatus');
 
     if (gameStatus.startsWith('error')) {
       return Scaffold(
@@ -36,17 +34,40 @@ class ChallengesScreen extends ConsumerWidget {
       );
     }
 
-    void sendAllChallenges() {
-      print('Sending all challenges...');
-      gameStatusNotifier.setDrawingStatus();
+
+    Future<void> sendAllChallenges() async {
+      final gameStatusNotifier = ref.read(gameStatusProvider.notifier);
+
+      // ✅ Passer en mode challenge
+      await gameStatusNotifier.setChallengeStatus(gameId);
+
+      ref.read(challengesProvider.notifier).selectAndSendRandomChallenge(gameId);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All challenges sent')),
+        const SnackBar(content: Text('✅ Challenges envoyés. Attente du mode dessin...')),
       );
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => guess.ChallengePage()),
-      );
+
+      // ✅ Attendre que la session passe en mode "drawing"
+      await gameStatusNotifier.waitForDrawingPhase(gameId);
+
+      // 🔹 Vérifier le statut avant de naviguer
+      final updatedStatus = ref.read(gameStatusProvider);
+
+      if (updatedStatus == "drawing") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => guess.ChallengePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('🚨 Erreur lors du passage en mode dessin')),
+        );
+      }
     }
+
+
+
+
 
     return Scaffold(
       appBar: AppBar(title: const Text('Saisie des challenges')),
@@ -71,7 +92,7 @@ class ChallengesScreen extends ConsumerWidget {
                 return Card(
                   child: ListTile(
                     title: Text('Challenge #${index + 1}'),
-                    subtitle: Text(challenge),
+                    subtitle: Text('${challenge.firstWord} ${challenge.secondWord} ${challenge.thirdWord} ${challenge.fourthWord} ${challenge.fifthWord}'),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () {
@@ -110,7 +131,7 @@ class ChallengesScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => showDialog(
           context: context,
-          builder: (context) => const ChallengeFormPopup(),
+          builder: (context) => const ChallengeFormPopup(gameId: 'gameId',),
         ),
         child: const Icon(Icons.add),
       ),

@@ -1,7 +1,6 @@
 // lib/providers/team_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:m2dfs_bauchot_pictionary/models/Player.dart';
-
 class TeamState {
   final List<Player> teamRed;
   final List<Player> teamBlue;
@@ -33,7 +32,6 @@ class TeamNotifier extends StateNotifier<TeamState> {
   TeamNotifier() : super(TeamState.initial());
 
   void addPlayerToTeam(Player player, String teamColor) {
-    print('Adding player to team: ${player.name} in team: $teamColor');
     if (teamColor == 'red') {
       state = state.copyWith(
         teamRed: [...state.teamRed, player],
@@ -43,10 +41,12 @@ class TeamNotifier extends StateNotifier<TeamState> {
         teamBlue: [...state.teamBlue, player],
       );
     }
-    print('Current team state: $state');
   }
 }
 
+
+
 final teamProvider = StateNotifierProvider<TeamNotifier, TeamState>(
       (ref) => TeamNotifier(),
+
 );

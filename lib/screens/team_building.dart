@@ -34,10 +34,6 @@ class TeamBuilding extends ConsumerWidget {
 
     final gameStatus = ref.watch(gameStatusProvider);
 
-    print('Building TeamBuilding screen with gameId: $gameId');
-    print('Current team state: $teamState');
-    print('Current game status: $gameStatus');
-
     if (gameStatus.startsWith('error')) {
       return Scaffold(
         appBar: AppBar(
