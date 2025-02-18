@@ -1,46 +1,68 @@
 import 'package:flutter/material.dart';
-import 'package:m2dfs_bauchot_pictionary/utils/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:m2dfs_bauchot_pictionary/forms/signup_form.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Piction-ai-ry',
-      home: SignUp(),
-      theme: AppTheme.lightTheme, // Use the custom theme
-    );
-  }
-}
-
+/// A widget that represents the sign-up screen.
 class SignUp extends StatelessWidget {
+  /// Creates a new SignUp instance.
+  ///
+  /// - Parameters:
+  ///   - key: An optional key for the widget.
+  const SignUp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Piction-ai-ry'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Sign up !',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blueAccent, Colors.purpleAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            const SizedBox(height: 20), // Add some space between the title and the form
-            SignupForm(),
-          ],
+          ),
+        ),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context), // Navigates back to the previous screen
+        ),
+        centerTitle: true,
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blueAccent, Colors.purpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Sign Up',
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Join Pictionary and start drawing!',
+                  style: GoogleFonts.poppins(fontSize: 18, color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+                const SignupForm(), // The sign-up form widget
+              ],
+            ),
+          ),
         ),
       ),
     );

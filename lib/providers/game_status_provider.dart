@@ -1,18 +1,25 @@
-// lib/providers/game_status_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Provides the game status state notifier.
 final gameStatusProvider = StateNotifierProvider<GameStatusNotifier, String>((ref) {
   return GameStatusNotifier();
 });
 
-// lib/providers/game_status_provider.dart
+/// A state notifier for managing the game status.
 class GameStatusNotifier extends StateNotifier<String> {
+  /// Creates a GameStatusNotifier with an initial status of 'lobby'.
   GameStatusNotifier() : super('lobby');
 
+  /// Fetches the game status from the server.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///
+  /// - Returns: A Future that completes when the operation is done.
   Future<void> fetchGameStatus(String gameId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -31,20 +38,23 @@ class GameStatusNotifier extends StateNotifier<String> {
         },
       );
 
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         state = data['status'];
       } else {
+        // Handle error
       }
     } catch (e) {
       print('Error fetching game status: ${e.toString()}');
     }
   }
 
-
-
-
+  /// Starts the game session.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///
+  /// - Returns: A Future that completes when the operation is done.
   Future<void> startGameSession(String gameId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -63,17 +73,23 @@ class GameStatusNotifier extends StateNotifier<String> {
         },
       );
 
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         state = data['status'];
       } else {
+        // Handle error
       }
     } catch (e) {
       print('Error starting game session: ${e.toString()}');
     }
   }
 
+  /// Starts the game session and waits for the challenge phase.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///
+  /// - Returns: A Future that completes when the operation is done.
   Future<void> startGameAndWaitForChallengePhase(String gameId) async {
     await startGameSession(gameId);
 
@@ -87,6 +103,12 @@ class GameStatusNotifier extends StateNotifier<String> {
     }
   }
 
+  /// Sets the game status to 'drawing'.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///
+  /// - Returns: A Future that completes when the operation is done.
   Future<void> setDrawingStatus(String gameId) async {
     final apiUri = dotenv.env['API_URL'];
     final prefs = await SharedPreferences.getInstance();
@@ -110,10 +132,16 @@ class GameStatusNotifier extends StateNotifier<String> {
     if (response.statusCode == 200) {
       state = 'drawing';
     } else {
-      return;
+      // Handle error
     }
   }
 
+  /// Sets the game status to 'challenge'.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///
+  /// - Returns: A Future that completes when the operation is done.
   Future<void> setChallengeStatus(String gameId) async {
     final apiUri = dotenv.env['API_URL'];
     final prefs = await SharedPreferences.getInstance();
@@ -133,14 +161,19 @@ class GameStatusNotifier extends StateNotifier<String> {
       },
     );
 
-
     if (response.statusCode == 200) {
       state = "challenge";
     } else {
+      // Handle error
     }
   }
 
-
+  /// Waits for the game status to change to 'drawing'.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///
+  /// - Returns: A Future that completes when the operation is done.
   Future<void> waitForDrawingPhase(String gameId) async {
     final apiUri = dotenv.env['API_URL'];
     final prefs = await SharedPreferences.getInstance();
@@ -171,11 +204,9 @@ class GameStatusNotifier extends StateNotifier<String> {
           return;
         }
       } else {
+        // Handle error
         return;
       }
     }
   }
-
-
-
 }

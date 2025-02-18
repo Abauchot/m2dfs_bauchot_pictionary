@@ -4,12 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/challenge.dart';
 import '../providers/challenge_provider.dart';
 
+/// A widget that displays a popup dialog for adding a challenge.
 class ChallengeFormPopup extends ConsumerWidget {
+  /// The ID of the game for which the challenge is being added.
   final String gameId;
+
+  /// Creates a ChallengeFormPopup widget.
   const ChallengeFormPopup({super.key, required this.gameId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the state of various providers.
     final firstArticle = ref.watch(firstArticleProvider);
     final preposition = ref.watch(prepositionProvider);
     final secondArticle = ref.watch(secondArticleProvider);
@@ -17,8 +22,10 @@ class ChallengeFormPopup extends ConsumerWidget {
     final secondWord = ref.watch(secondWordProvider);
     final forbiddenWords = ref.watch(forbiddenWordsProvider);
 
+    // Controller for the forbidden words text field.
     final forbiddenWordController = TextEditingController();
 
+    /// Adds a forbidden word to the list.
     void addForbiddenWord() {
       if (forbiddenWordController.text.isNotEmpty) {
         ref
@@ -28,19 +35,20 @@ class ChallengeFormPopup extends ConsumerWidget {
       }
     }
 
+    /// Removes a forbidden word from the list at the specified index.
     void removeForbiddenWord(WidgetRef ref, int index) {
       ref.read(forbiddenWordsProvider.notifier).update((state) => [...state]..removeAt(index));
     }
 
-
+    /// Submits the form and adds a challenge.
     void submitForm(String gameId) {
       if (firstWord.isNotEmpty && secondWord.isNotEmpty) {
         final challenge = Challenge(
-          firstWord: firstArticle,  // UN / UNE
-          secondWord: firstWord,    // Mot 1
-          thirdWord: preposition,   // SUR / DANS
-          fourthWord: secondArticle,// UN / UNE
-          fifthWord: secondWord,    // Mot 2
+          firstWord: firstArticle,
+          secondWord: firstWord,
+          thirdWord: preposition,
+          fourthWord: secondArticle,
+          fifthWord: secondWord,
           forbiddenWords: forbiddenWords.length >= 3
               ? List<String>.from(forbiddenWords)
               : ["motInterdit1", "motInterdit2", "motInterdit3"],
@@ -57,9 +65,6 @@ class ChallengeFormPopup extends ConsumerWidget {
       }
     }
 
-
-
-
     return Dialog(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -71,7 +76,7 @@ class ChallengeFormPopup extends ConsumerWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            // Premier bouton UN/UNE
+            // First toggle button for UN/UNE
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -84,7 +89,7 @@ class ChallengeFormPopup extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Champ texte pour le premier mot
+            // Text field for the first word
             TextField(
               onChanged: (value) =>
               ref.read(firstWordProvider.notifier).state = value,
@@ -95,7 +100,7 @@ class ChallengeFormPopup extends ConsumerWidget {
               style: const TextStyle(color: Colors.black),
             ),
             const SizedBox(height: 16),
-            // Deuxième bouton SUR/DANS
+            // Second toggle button for SUR/DANS
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -108,7 +113,7 @@ class ChallengeFormPopup extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Troisième bouton UN/UNE
+            // Third toggle button for UN/UNE
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -121,7 +126,7 @@ class ChallengeFormPopup extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Champ texte pour le deuxième mot
+            // Text field for the second word
             TextField(
               onChanged: (value) =>
               ref.read(secondWordProvider.notifier).state = value,
@@ -129,10 +134,10 @@ class ChallengeFormPopup extends ConsumerWidget {
                 hintText: 'Votre deuxième mot',
                 border: OutlineInputBorder(),
               ),
-              style: const TextStyle(color: Colors.black), // Couleur noire
+              style: const TextStyle(color: Colors.black), // Black color
             ),
             const SizedBox(height: 16),
-            // Gestion des mots interdits
+            // Forbidden words management
             const Text('Mots interdits'),
             Wrap(
               children: forbiddenWords
@@ -153,7 +158,7 @@ class ChallengeFormPopup extends ConsumerWidget {
                       hintText: 'Ajouter un mot interdit',
                       border: OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.black), // Couleur noire
+                    style: const TextStyle(color: Colors.black), // Black color
                   ),
                 ),
                 IconButton(
@@ -163,10 +168,9 @@ class ChallengeFormPopup extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // Bouton Ajouter
+            // Add button
             ElevatedButton(
               onPressed: () => submitForm(gameId),
-
               child: const Text('Ajouter'),
             ),
           ],
@@ -175,6 +179,7 @@ class ChallengeFormPopup extends ConsumerWidget {
     );
   }
 
+  /// Builds a toggle button with the specified label, selection state, and tap callback.
   Widget _buildToggleButton(String label, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,

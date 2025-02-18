@@ -7,34 +7,57 @@ import '../models/challenge.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
 
-
-
+/// Provides the first article state.
 final firstArticleProvider = StateProvider<String>((ref) => "UNE");
+
+/// Provides the preposition state.
 final prepositionProvider = StateProvider<String>((ref) => "SUR");
+
+/// Provides the second article state.
 final secondArticleProvider = StateProvider<String>((ref) => "UN");
+
+/// Provides the first word state.
 final firstWordProvider = StateProvider<String>((ref) => "");
+
+/// Provides the second word state.
 final secondWordProvider = StateProvider<String>((ref) => "");
+
+/// Provides the forbidden words state.
 final forbiddenWordsProvider = StateProvider<List<String>>((ref) => []);
 
-
+/// Provides the challenges state notifier.
 final challengesProvider = StateNotifierProvider<ChallengesNotifier, List<Challenge>>((ref) {
   return ChallengesNotifier();
 });
 
-
+/// A state notifier for managing a list of challenges.
 class ChallengesNotifier extends StateNotifier<List<Challenge>> {
+  /// Creates a ChallengesNotifier with an initial empty list of challenges.
   ChallengesNotifier() : super([]);
 
+  /// Adds a challenge to the list.
+  ///
+  /// - Parameters:
+  ///   - challenge: The challenge to add.
   void addChallenge(Challenge challenge) {
     state = [...state, challenge];
   }
 
+  /// Removes a challenge from the list by index.
+  ///
+  /// - Parameters:
+  ///   - index: The index of the challenge to remove.
   void removeChallenge(int index) {
     state = [...state]..removeAt(index);
   }
 
+  /// Selects a random challenge and sends it to the server.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///
+  /// - Returns: A Future that completes when the operation is done.
   Future<void> selectAndSendRandomChallenge(String gameId) async {
-
     final apiUrl = dotenv.env['API_URL'];
     final prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('userToken');
@@ -43,7 +66,7 @@ class ChallengesNotifier extends StateNotifier<List<Challenge>> {
       return;
     }
 
-    // 🔹 Vérifier le statut de la session
+    // Check the status of the session
     final statusUri = Uri.parse('$apiUrl/game_sessions/$gameId/status');
     final statusResponse = await http.get(statusUri, headers: {'Authorization': 'Bearer $token'});
 
@@ -98,10 +121,17 @@ class ChallengesNotifier extends StateNotifier<List<Challenge>> {
       final responseData = jsonDecode(drawResponse.body);
       chosenChallenge.imageUrl = responseData['image_url'];
     } else {
+      // Handle error
     }
   }
 
-
+  /// Registers a challenge with the server.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///   - challenge: The challenge to register.
+  ///
+  /// - Returns: A Future that completes with the registered challenge or null if registration failed.
   Future<Challenge?> registerChallenge(String gameId, Challenge challenge) async {
     final apiUrl = dotenv.env['API_URL'];
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -122,7 +152,6 @@ class ChallengesNotifier extends StateNotifier<List<Challenge>> {
       'forbidden_words': challenge.forbiddenWords,
     });
 
-
     final response = await http.post(
       uri,
       headers: {
@@ -131,7 +160,6 @@ class ChallengesNotifier extends StateNotifier<List<Challenge>> {
       },
       body: body,
     );
-
 
     if (response.statusCode == 201) {
       final responseData = jsonDecode(response.body);
@@ -149,7 +177,12 @@ class ChallengesNotifier extends StateNotifier<List<Challenge>> {
     }
   }
 
-
+  /// Ensures the game is in the challenge phase.
+  ///
+  /// - Parameters:
+  ///   - gameId: The ID of the game session.
+  ///
+  /// - Returns: A Future that completes with true if the game is in the challenge phase, false otherwise.
   Future<bool> ensureChallengePhase(String gameId) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('userToken');
@@ -173,6 +206,4 @@ class ChallengesNotifier extends StateNotifier<List<Challenge>> {
       return false;
     }
   }
-
-
 }

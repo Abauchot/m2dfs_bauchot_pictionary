@@ -1,31 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../utils/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+/// A page that displays the summary of the game.
 class GameSummaryPage extends StatelessWidget {
+  /// Creates a new GameSummaryPage instance.
+  ///
+  /// - Parameters:
+  ///   - key: An optional key for the widget.
   const GameSummaryPage({super.key});
-
-  void main() {
-    runApp(MaterialApp(
-      theme: AppTheme.lightTheme,
-      home: GameSummaryPage(),
-    ));
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red,
-      appBar: AppBar(
-        title: const Text('Résumé de la partie'),
-        backgroundColor: Colors.red,
-        centerTitle: true,
-      ),
+      appBar: _buildAppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Victory Message
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -33,20 +26,24 @@ class GameSummaryPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
-                children: const [
-                  Icon(Icons.star, size: 48, color: Colors.black),
-                  SizedBox(height: 8),
-                  Text('Victoire de l’équipe ROUGE',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                children: [
+                  const Icon(Icons.star, size: 48, color: Colors.black),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Victory for the RED team!',
+                    style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
+
+            // Game Summary
             Expanded(
               child: ListView(
                 children: [
-                  _buildTeamSummary('Résumé de la partie des rouges', Colors.redAccent),
-                  _buildTeamSummary('Résumé de la partie des bleus', Colors.blueAccent),
+                  _buildTeamSummary('Summary of the Red Team\'s game', Colors.redAccent),
+                  _buildTeamSummary('Summary of the Blue Team\'s game', Colors.blueAccent),
                 ],
               ),
             ),
@@ -56,13 +53,46 @@ class GameSummaryPage extends StatelessWidget {
     );
   }
 
+  /// Builds the app bar for the screen.
+  ///
+  /// - Returns: A PreferredSizeWidget representing the app bar.
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blueAccent, Colors.purpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+      elevation: 0,
+      centerTitle: true,
+      title: Text(
+        'Game Summary',
+        style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+    );
+  }
+
+  /// Builds the summary section for a team.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the summary section.
+  ///   - color: The color associated with the team.
+  ///
+  /// - Returns: A Widget representing the team summary section.
   Widget _buildTeamSummary(String title, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          child: Text(
+            title,
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
         ),
         _buildChallengeItem(),
         _buildChallengeItem(),
@@ -71,6 +101,9 @@ class GameSummaryPage extends StatelessWidget {
     );
   }
 
+  /// Builds a widget representing a challenge item.
+  ///
+  /// - Returns: A Widget representing a challenge item.
   Widget _buildChallengeItem() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -86,15 +119,17 @@ class GameSummaryPage extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text('Une poule sur un mur',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
+                children: [
+                  Text(
+                    'A hen on a wall',
+                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text('+25', style: TextStyle(color: Colors.green, fontSize: 14)),
-                      SizedBox(width: 8),
-                      Text('-8', style: TextStyle(color: Colors.red, fontSize: 14)),
+                      Text('+25', style: GoogleFonts.poppins(color: Colors.green, fontSize: 14)),
+                      const SizedBox(width: 8),
+                      Text('-8', style: GoogleFonts.poppins(color: Colors.red, fontSize: 14)),
                     ],
                   ),
                 ],
@@ -107,5 +142,3 @@ class GameSummaryPage extends StatelessWidget {
     );
   }
 }
-
-

@@ -1,24 +1,27 @@
-// lib/screens/challenge_creation.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/challenge_provider.dart';
 import 'package:m2dfs_bauchot_pictionary/forms/challenge_form.dart';
 import 'package:m2dfs_bauchot_pictionary/providers/game_status_provider.dart';
 import 'package:m2dfs_bauchot_pictionary/screens/challenge_guess.dart' as guess;
 
+/// A screen for managing and creating challenges in the game.
 class ChallengesScreen extends ConsumerWidget {
+  /// The ID of the game session.
   final String gameId;
 
-  const ChallengesScreen({
-    super.key,
-    required this.gameId,
-  });
+  /// Creates a new ChallengesScreen instance.
+  ///
+  /// - Parameters:
+  ///   - key: An optional key for the widget.
+  ///   - gameId: The ID of the game session.
+  const ChallengesScreen({super.key, required this.gameId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final challenges = ref.watch(challengesProvider);
     final gameStatusNotifier = ref.read(gameStatusProvider.notifier);
-
 
     Future(() {
       gameStatusNotifier.setChallengeStatus(gameId);
@@ -26,31 +29,26 @@ class ChallengesScreen extends ConsumerWidget {
 
     final gameStatus = ref.watch(gameStatusProvider);
 
-
     if (gameStatus.startsWith('error')) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Saisie des challenges')),
-        body: Center(child: Text(gameStatus)),
+        appBar: _buildAppBar(),
+        body: Center(child: Text(gameStatus, style: GoogleFonts.poppins())),
       );
     }
 
-
+    /// Sends all challenges to the server and waits for the drawing phase.
+    ///
+    /// - Returns: A Future that completes when the operation is done.
     Future<void> sendAllChallenges() async {
-      final gameStatusNotifier = ref.read(gameStatusProvider.notifier);
-
-      // ✅ Passer en mode challenge
       await gameStatusNotifier.setChallengeStatus(gameId);
-
       ref.read(challengesProvider.notifier).selectAndSendRandomChallenge(gameId);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Challenges envoyés. Attente du mode dessin...')),
+        SnackBar(content: Text('✅ Challenges sent. Waiting for drawing phase...', style: GoogleFonts.poppins())),
       );
 
-      // ✅ Attendre que la session passe en mode "drawing"
       await gameStatusNotifier.waitForDrawingPhase(gameId);
 
-      // 🔹 Vérifier le statut avant de naviguer
       final updatedStatus = ref.read(gameStatusProvider);
 
       if (updatedStatus == "drawing") {
@@ -60,30 +58,17 @@ class ChallengesScreen extends ConsumerWidget {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('🚨 Erreur lors du passage en mode dessin')),
+          SnackBar(content: Text('🚨 Error switching to drawing mode', style: GoogleFonts.poppins())),
         );
       }
     }
 
-
-
-
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Saisie des challenges')),
-      body: challenges.isEmpty
-          ? const Center(child: Text('Aucun challenge ajouté'))
-          : Column(
+      appBar: _buildAppBar(),
+      body: Column(
         children: [
-          if (challenges.length < 3)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'You need to enter at least 3 challenges to start the game',
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-            ),
+          if (challenges.isEmpty)
+            Center(child: Text('No challenges added yet', style: GoogleFonts.poppins(fontSize: 16))),
           Expanded(
             child: ListView.builder(
               itemCount: challenges.length,
@@ -91,15 +76,15 @@ class ChallengesScreen extends ConsumerWidget {
                 final challenge = challenges[index];
                 return Card(
                   child: ListTile(
-                    title: Text('Challenge #${index + 1}'),
-                    subtitle: Text('${challenge.firstWord} ${challenge.secondWord} ${challenge.thirdWord} ${challenge.fourthWord} ${challenge.fifthWord}'),
+                    title: Text('Challenge #${index + 1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                    subtitle: Text(
+                      '${challenge.firstWord} ${challenge.secondWord} ${challenge.thirdWord} '
+                          '${challenge.fourthWord} ${challenge.fifthWord}',
+                      style: GoogleFonts.poppins(),
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        ref
-                            .read(challengesProvider.notifier)
-                            .removeChallenge(index);
-                      },
+                      onPressed: () => ref.read(challengesProvider.notifier).removeChallenge(index),
                     ),
                   ),
                 );
@@ -111,19 +96,16 @@ class ChallengesScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: sendAllChallenges,
-                child: const Text('Send All Challenges'),
+                child: Text('Send All Challenges', style: GoogleFonts.poppins(fontSize: 16)),
               ),
             ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => guess.ChallengePage()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => guess.ChallengePage()));
               },
-              child: const Text('Go to Challenge Guess Screen'),
+              child: Text('Go to Challenge Guess Screen', style: GoogleFonts.poppins(fontSize: 16)),
             ),
           ),
         ],
@@ -131,10 +113,33 @@ class ChallengesScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => showDialog(
           context: context,
-          builder: (context) => const ChallengeFormPopup(gameId: 'gameId',),
+          builder: (context) => ChallengeFormPopup(gameId: gameId),
         ),
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  /// Builds the app bar for the screen.
+  ///
+  /// - Returns: A PreferredSizeWidget representing the app bar.
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blueAccent, Colors.purpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+      elevation: 0,
+      title: Text(
+        'Challenge Creation',
+        style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+      centerTitle: true,
     );
   }
 }

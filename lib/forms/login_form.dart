@@ -2,52 +2,77 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:m2dfs_bauchot_pictionary/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:m2dfs_bauchot_pictionary/utils/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:m2dfs_bauchot_pictionary/screens/home.dart';
 
+/// A stateful widget that represents the login form.
 class LoginForm extends StatefulWidget {
+  /// Creates a LoginForm widget.
   const LoginForm({super.key});
 
   @override
   _LoginFormState createState() => _LoginFormState();
 }
 
+/// The state for the LoginForm widget.
 class _LoginFormState extends State<LoginForm> {
+  /// Controller for the username text field.
   final TextEditingController _nameController = TextEditingController();
+
+  /// Controller for the password text field.
   final TextEditingController _passwordController = TextEditingController();
+
+  /// Whether the password is visible or not.
   bool _isPasswordVisible = false;
+
+  /// Whether the "Remember me" checkbox is checked or not.
   bool _rememberMe = false;
 
+  /// Whether the login process is loading or not.
+  bool _isLoading = false;
+
+  /// Toggles the visibility of the password.
   void _togglePasswordVisibility() {
     setState(() {
       _isPasswordVisible = !_isPasswordVisible;
     });
   }
 
+  /// Decodes a JWT token and returns its payload as a Map.
+  ///
+  /// Throws an exception if the token is invalid.
+  ///
+  /// - Parameters:
+  ///   - token: The JWT token to decode.
+  ///
+  /// - Returns: A Map containing the payload of the token.
   Map<String, dynamic> decodeJWT(String token) {
     final parts = token.split('.');
     if (parts.length != 3) {
-      throw Exception('JWT invalide');
+      throw Exception('Invalid JWT');
     }
     final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
     return jsonDecode(payload);
   }
 
+  /// Handles the login process.
+  ///
+  /// Sends a login request to the server and handles the response.
+  /// If the login is successful, stores the user information in shared preferences
+  /// and navigates to the home page.
   Future<void> _login() async {
-    final String name = _nameController.text;
-    final String password = _passwordController.text;
+    final String name = _nameController.text.trim();
+    final String password = _passwordController.text.trim();
 
     if (name.isEmpty || password.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Veuillez remplir tous les champs requis.'),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields.')),
+      );
       return;
     }
+
+    setState(() => _isLoading = true);
 
     final String url = '${dotenv.env['API_URL']}/login';
 
@@ -56,6 +81,8 @@ class _LoginFormState extends State<LoginForm> {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'name': name, 'password': password}),
     );
+
+    setState(() => _isLoading = false);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -68,65 +95,39 @@ class _LoginFormState extends State<LoginForm> {
       await prefs.setString('userToken', token);
       await prefs.setString('userId', userId);
 
-
       if (_rememberMe) {
         await prefs.setBool('rememberMe', true);
       }
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Connexion réussie!'),
-          ),
-        );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => const HomePage()),
         );
       }
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Échec de la connexion. Veuillez réessayer.'),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login failed. Please try again.')),
+      );
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TextField(
-            controller: _nameController,
-            style: const TextStyle(color: AppTheme.primaryBlue),
-            decoration: const InputDecoration(
-              labelText: 'Name',
-              labelStyle: TextStyle(color: AppTheme.primaryBlue),
-              prefixIcon: Icon(Icons.person, color: AppTheme.primaryBlue),
-            ),
-          ),
-          const SizedBox(height: 16.0),
-          TextField(
+          _buildTextField(controller: _nameController, label: 'Username'),
+          const SizedBox(height: 20),
+          _buildTextField(
             controller: _passwordController,
-            style: const TextStyle(color: AppTheme.primaryBlue),
-            decoration: InputDecoration(
-              labelText: 'Password',
-              labelStyle: const TextStyle(color: AppTheme.primaryBlue),
-              prefixIcon: const Icon(Icons.lock, color: AppTheme.primaryBlue),
-              suffixIcon: IconButton(
-                icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility, color: AppTheme.primaryBlue),
-                onPressed: _togglePasswordVisibility,
-              ),
-            ),
-            obscureText: !_isPasswordVisible,
+            label: 'Password',
+            isPassword: true,
+            toggleVisibility: _togglePasswordVisibility,
+            isPasswordVisible: _isPasswordVisible,
           ),
-          const SizedBox(height: 16.0),
+          const SizedBox(height: 10),
           Row(
             children: [
               Checkbox(
@@ -137,16 +138,69 @@ class _LoginFormState extends State<LoginForm> {
                   });
                 },
               ),
-              const Text('Remember me', style: TextStyle(color: AppTheme.primaryBlue)),
+              Text('Remember me', style: GoogleFonts.poppins(color: Colors.white)),
             ],
           ),
-          const SizedBox(height: 16.0),
-          ElevatedButton(
-            onPressed: _login,
-            child: const Text('login'),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _login,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  /// Builds a text field with the specified parameters.
+  ///
+  /// - Parameters:
+  ///   - controller: The controller for the text field.
+  ///   - label: The label for the text field.
+  ///   - isPassword: Whether the text field is for a password.
+  ///   - isPasswordVisible: Whether the password is visible.
+  ///   - toggleVisibility: The callback to toggle the password visibility.
+  ///
+  /// - Returns: A Widget representing the text field.
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    bool isPassword = false,
+    bool isPasswordVisible = false,
+    VoidCallback? toggleVisibility,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword ? !isPasswordVisible : false,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
+        ),
+        suffixIcon: isPassword
+            ? IconButton(
+          icon: Icon(isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white),
+          onPressed: toggleVisibility,
+        )
+            : null,
+      ),
+      style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
     );
   }
 }
